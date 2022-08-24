@@ -1,0 +1,48 @@
+<html>
+<head>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <style>
+        body,#renderCanvas { width: 100%; height: 100%;}
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+        var cnt = 0;
+        var box;
+        var camera;
+        var cone;
+
+        const createScene = function() {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color3.Black;
+
+            const alpha =  3*Math.PI/2;
+            const beta = Math.PI/2;
+            const radius = 8;
+            const target = new BABYLON.Vector3(0, 0, 0);
+
+            camera = new BABYLON.ArcRotateCamera("Camera", alpha, beta, radius, target, scene);
+            camera.attachControl(canvas, true);
+
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+
+            //box = BABYLON.MeshBuilder.CreateBox("box", {});
+            cone = BABYLON.MeshBuilder.CreateCylinder("cone",{height:0.1, });
+            cone.position.x = 0;
+            cone.position.y = 0;
+
+            return scene;
+        };
+
+        const sceneToRender = createScene();
+        engine.runRenderLoop(function(){
+        	cone.rotation.z += 0.01;
+        	cone.rotation.x += 0.01;
+            sceneToRender.render();
+        });
+    </script>
+</body>
+</html>

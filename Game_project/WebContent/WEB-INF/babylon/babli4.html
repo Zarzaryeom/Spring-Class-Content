@@ -1,0 +1,118 @@
+<html>
+<head>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <style>
+        body,#renderCanvas { width: 100%; height: 100%;}
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+        var cnt = 0;
+        var box;
+        var camera;
+        var cone_bw;
+        var cone_b;
+        
+        var arr2d = [
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 
+			[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0],
+	 		[0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0]
+		   ]
+		var flag_wb = true;
+		var flag_end = true;
+        
+
+        const createScene = function() {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color3.Blue;
+
+            const alpha =  3*Math.PI/2;
+            const beta = Math.PI/2;
+            const radius = 8;
+            const target = new BABYLON.Vector3(0, 0, 0);
+
+            camera = new BABYLON.ArcRotateCamera("Camera", alpha, beta, radius, target, scene);
+            camera.attachControl(canvas, true);
+
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+            
+        	// 흑돌 색 추가하기
+            const faceColors = [ ];
+            faceColors[0] = new BABYLON.Color4(0, 0, 0)
+            faceColors[1] = new BABYLON.Color4(0, 0, 0)
+            faceColors[2] = new BABYLON.Color4(0, 0, 0)
+            faceColors[3] = new BABYLON.Color4(0, 0, 0)
+            
+            box = [[]];
+
+            for (var i = 0; i < 19; i++) {
+            	for(let j = 0; j < 19; j++){
+            		// 바둑판 생성
+            		var mat = new BABYLON.StandardMaterial("omok", scene);
+        	        mat.diffuseTexture = new BABYLON.Texture("0.png", scene);
+            	    mat.diffuseTexture.hasAlpha = true;
+                	mat.backFaceCulling = false;
+                	
+                	box = BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+                	box.position.z = j;
+                	box.position.x = i;
+                	
+                	box.material = mat;
+                	
+                	// 백돌
+                    cone_w = BABYLON.MeshBuilder.CreateCylinder("cone",{height:0.1 });
+                    cone_w.position.x = j;
+                    cone_w.position.z = i;
+                    
+                 	// 흑돌
+                    cone_b = BABYLON.MeshBuilder.CreateCylinder("cone",{height:0.1, faceColors: faceColors});
+                    cone_b.position.x = j;
+                    cone_b.position.z = i;
+	    	
+                    box.actionManager = new BABYLON.ActionManager(scene);
+    	        	box.actionManager.registerAction(
+                	new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, 
+                	function (evt) {
+	                    const sourceBox = evt.meshUnderPointer;
+    	                cone_w.position.y += 0.5;
+        	            cone_b.position.y -= 0.5;
+            	        //sourceBox.position.x += 0.1;
+                	    console.log(box.name);
+                	}));
+            	}
+            }
+            
+            
+
+            return scene;
+        };
+
+        const sceneToRender = createScene();
+        engine.runRenderLoop(function(){
+            sceneToRender.render();
+        });
+    </script>
+</body>
+</html>

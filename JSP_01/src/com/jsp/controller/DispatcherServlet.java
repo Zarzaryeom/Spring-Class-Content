@@ -1,0 +1,79 @@
+package com.jsp.controller;
+
+import java.io.IOException;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.jsp.action.Action;
+
+public class DispatcherServlet extends HttpServlet {
+
+	private HandlerMapper handlerMapper;
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		String path = config.getInitParameter("url.properties");
+		
+		try {
+			if(path != null) {
+				handlerMapper = new HandlerMapper(path);
+			}else {
+				handlerMapper = new HandlerMapper();
+			}
+			
+			System.out.println("[DispatcherServlet] handlerMapper가 준비");
+		}catch(Exception e) {
+			System.out.println("[DispatcherServlet] handlerMapper가 실패");
+			e.printStackTrace();
+		}
+				
+	}
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		requestPro(request, response);	
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		requestPro(request, response);
+	}
+
+	protected void requestPro(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	
+		// 사용자 URL 검출
+		String command = request.getRequestURI(); // contextPath 포함.
+		if(command.indexOf(request.getContextPath()) == 0) {// contextPath 삭제
+			command = command.substring(request.getContextPath().length());
+		}
+		System.out.println("command : " + command);
+		// commandHandler 실행(HandlerMapper 의뢰 action 할당)
+		Action action = null;
+		String view = null;
+		if(handlerMapper != null) {
+			action = handlerMapper.getAction(command);
+			System.out.println("action : " + action);
+			if(action != null) { // 올바른 요청
+				try {
+					view = action.process(request, response);
+					System.out.println("view : " + view);
+					
+					if(view == null) {
+						return;
+					}
+					request.setAttribute("viewName", view);
+					InternalViewResolver.view(request, response);
+				} catch(Exception e) {
+					e.printStackTrace();
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND); // 404error
+			}
+		} else {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500error
+		}
+	}
+}
